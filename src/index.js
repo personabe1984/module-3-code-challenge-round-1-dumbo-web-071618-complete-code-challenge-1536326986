@@ -39,10 +39,12 @@ document.addEventListener('DOMContentLoaded', function() {
     })
   })
 
+  // create comment
   commentForm.addEventListener("submit", (event) => {
     event.preventDefault();
     let newComment = document.querySelector("#comment_input");
-    commentBox.appendChild(renderCommentFromFrontEnd(newComment.value));
+    let comment = renderCommentFromFrontEnd(newComment.value)
+    commentBox.appendChild(comment);
 
     fetch(commentsURL, {
       method: 'POST',
@@ -51,8 +53,23 @@ document.addEventListener('DOMContentLoaded', function() {
         image_id: imageId,
         content : newComment.value
       })
-    })
-    newComment.value = '';
+    }).then( response => response.json())
+      .then( data => comment.querySelector('button').setAttribute('data-id', data.id))
+  })
+
+  // add delete handler to 'x' buttons
+  commentBox.addEventListener('click', (e) => {
+    if (e.target.tagName === 'BUTTON') {
+      let commentId = e.target.getAttribute('data-id')
+      commentBox.removeChild(e.target.parentNode)
+      fetch(commentsURL + commentId, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
+    }
   })
 
 
